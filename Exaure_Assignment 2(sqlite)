@@ -1,0 +1,219 @@
+import sqlite3
+
+# Connect to the database
+conn = sqlite3.connect('student_information.db')
+cursor = conn.cursor()
+
+# Create tables if they don't exist
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS students (
+        id TEXT PRIMARY KEY,
+        student_id TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        gender TEXT NOT NULL,
+        year_level INTEGER NOT NULL,
+        course_code TEXT NOT NULL
+    )
+''')
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS courses (
+        course_code TEXT PRIMARY KEY,
+        course TEXT NOT NULL
+    )
+''')
+
+# Function to create a new student
+def create_student():
+    student_id = input("Enter the student ID: ")
+    name = input("Enter the student name: ")
+    gender = input("Enter the student gender: ")
+    year_level = input("Enter the student year level: ")
+    course_code = input("Enter the course code: ")
+
+        
+    cursor.execute("INSERT INTO students (student_id, name, gender, year_level, course_code) VALUES (?, ?, ?, ?, ?)",
+                   (student_id, name, gender, year_level, course_code))
+    conn.commit()
+    print("Student created successfully.")
+
+# Function to read student information
+def read_student():
+    student_id = input("Enter the student ID: ")
+    cursor.execute("SELECT * FROM students WHERE student_id=?", (student_id,))
+    student = cursor.fetchone()
+    if student:
+        print("Student Information:")
+        print(f"ID: {student[0]}")
+        print(f"Name: {student[1]}")
+        print(f"Gender: {student[2]}")
+        print(f"Year Level: {student[3]}")
+        print(f"Course Code: {student[4]}")
+    else:
+        print("Error: Student not found.")
+
+# Function to update student information
+def update_student():
+    student_id = input("Enter the student ID: ")
+    cursor.execute("SELECT * FROM students WHERE student_id=?", (student_id,))
+    student = cursor.fetchone()
+    if student:
+        print("Existing Information:")
+        print(f"ID: {student[0]}")
+        print(f"Name: {student[1]}")
+        print(f"Gender: {student[2]}")
+        print(f"Year Level: {student[3]}")
+        print(f"Course Code: {student[4]}")
+
+        name = input("Enter the updated student name (press Enter to skip): ")
+        if name:
+            student = (*student[:1], name, *student[2:])
+
+        gender = input("Enter the updated student gender (press Enter to skip): ")
+        if gender:
+            student = (*student[:2], gender, *student[3:])
+
+        year_level = input("Enter the updated student year level (press Enter to skip): ")
+        if year_level:
+            student = (*student[:3], int(year_level), *student[4:])
+
+        course_code = input("Enter the updated course code (press Enter to skip): ")
+        if course_code:
+            student = (*student[:4], course_code)
+
+        cursor.execute("UPDATE students SET name=?, gender=?, year_level=?, course_code=? WHERE student_id=?",
+                       (student[1], student[2], student[3], student[4], student_id))
+        conn.commit()
+        print("Student information updated successfully.")
+    else:
+        print("Error: Student not found.")
+
+# Function to delete a student
+def delete_student():
+    student_id = input("Enter the student ID: ")
+    cursor.execute("SELECT * FROM students WHERE student_id=?", (student_id,))
+    student = cursor.fetchone()
+    if student:
+        cursor.execute("DELETE FROM students WHERE student_id=?", (student_id,))
+        conn.commit()
+        print("Student deleted successfully.")
+    else:
+        print("Error: Student not found.")
+
+# Function to list all students
+def list_students():
+    cursor.execute("SELECT * FROM students")
+    students = cursor.fetchall()
+    if students:
+        print("Student List:")
+        for student in students:
+            print(f"ID: {student[0]}, Name: {student[1]}, Gender: {student[2]}, Year Level: {student[3]}, Course Code: {student[4]}")
+    else:
+        print("No students found.")
+
+# Function to create a new course
+def create_course():
+    course_code = input("Enter the course code: ")
+    course = input("Enter the course name: ")
+
+    cursor.execute("INSERT INTO courses (course_code, course) VALUES (?, ?)", (course_code, course))
+    conn.commit()
+    print("Course created successfully.")
+
+# Function to read course information
+def read_course():
+    course_code = input("Enter the course code: ")
+    cursor.execute("SELECT * FROM courses WHERE course_code=?", (course_code,))
+    course = cursor.fetchone()
+    if course:
+        print("Course Information:")
+        print(f"Code: {course[0]}")
+        print(f"Course: {course[1]}")
+    else:
+        print("Error: Course not found.")
+
+# Function to update course information
+def update_course():
+    course_code = input("Enter the course code: ")
+    cursor.execute("SELECT * FROM courses WHERE course_code=?", (course_code,))
+    course = cursor.fetchone()
+    if course:
+        print("Existing Information:")
+        print(f"Code: {course[0]}")
+        print(f"Course: {course[1]}")
+
+        new_course = input("Enter the updated course name: ")
+        cursor.execute("UPDATE courses SET course=? WHERE course_code=?", (new_course, course_code))
+        conn.commit()
+        print("Course information updated successfully.")
+    else:
+        print("Error: Course not found.")
+
+# Function to delete a course
+def delete_course():
+    course_code = input("Enter the course code: ")
+    cursor.execute("SELECT * FROM courses WHERE course_code=?", (course_code,))
+    course = cursor.fetchone()
+    if course:
+        cursor.execute("DELETE FROM courses WHERE course_code=?", (course_code,))
+        conn.commit()
+        print("Course deleted successfully.")
+    else:
+        print("Error: Course not found.")
+
+# Function to list all courses
+def list_courses():
+    cursor.execute("SELECT * FROM courses")
+    courses = cursor.fetchall()
+    if courses:
+        print("Course List:")
+        for course in courses:
+            print(f"Code: {course[0]}, Course: {course[1]}")
+    else:
+        print("No courses found.")
+
+# Main menu
+print("--- Simple Student Information System (SSIS) v2 ---")
+print("1. Create Student")
+print("2. Read Student Information")
+print("3. Update Student Information")
+print("4. Delete Student")
+print("5. List Students")
+print("6. Create Course")
+print("7. Read Course Information")
+print("8. Update Course Information")
+print("9. Delete Course")
+print("10. List Courses")
+print("0. Exit")
+print("--------------------------------------------------")
+
+# Program loop
+while True:
+    option = input("\nEnter an option: ")
+    if option == "0":
+        break
+    elif option == "1":
+        create_student()
+    elif option == "2":
+        read_student()
+    elif option == "3":
+        update_student()
+    elif option == "4":
+        delete_student()
+    elif option == "5":
+        list_students()
+    elif option == "6":
+        create_course()
+    elif option == "7":
+        read_course()
+    elif option == "8":
+        update_course()
+    elif option == "9":
+        delete_course()
+    elif option == "10":
+        list_courses()
+    else:
+        print("Invalid option. Please try again.")
+
+# Close the database connection
+conn.close()
