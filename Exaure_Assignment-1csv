@@ -1,0 +1,264 @@
+import csv
+import os
+
+# Get the directory of the current script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# File path for courses.csv
+COURSES_FILE = os.path.join(current_dir, 'courses.csv')
+STUDENTS_FILE = os.path.join(current_dir, 'students.csv')
+
+# Function to create a new student
+def create_student():
+    student_id = input("Enter the student ID: ")
+    name = input("Enter the student name: ")
+    gender = input("Enter the student gender: ")
+    year_level = input("Enter the student year level: ")
+    course_code = input("Enter the course code: ")
+
+    student_data = [student_id, name, gender, year_level, course_code]
+
+    if os.path.exists(STUDENTS_FILE) and os.access(STUDENTS_FILE, os.W_OK):
+        with open(STUDENTS_FILE, 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(student_data)
+
+        print("Student created successfully.")
+    else:
+        print(f"Error: Cannot write to {STUDENTS_FILE}. Please check file permissions.")
+
+# Function to read student information
+def read_student():
+    student_id = input("Enter the student ID: ")
+
+    if os.path.exists(STUDENTS_FILE) and os.access(STUDENTS_FILE, os.R_OK):
+        with open(STUDENTS_FILE, 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if row[0] == student_id:
+                    print("Student Information:")
+                    print(f"ID: {row[0]}")
+                    print(f"Name: {row[1]}")
+                    print(f"Gender: {row[2]}")
+                    print(f"Year Level: {row[3]}")
+                    print(f"Course Code: {row[4]}")
+                    return
+    else:
+        print(f"Error: Cannot read from {STUDENTS_FILE}. Please check if the file exists and file permissions.")
+
+# Function to update student information
+def update_student():
+    student_id = input("Enter the student ID: ")
+    found = False
+
+    with open(STUDENTS_FILE, 'r', newline='') as file:
+        reader = csv.reader(file)
+        rows = list(reader)
+        for row in rows:
+            if row[0] == student_id:
+                print("Existing Information:")
+                print(f"ID: {row[0]}")
+                print(f"Name: {row[1]}")
+                print(f"Gender: {row[2]}")
+                print(f"Year Level: {row[3]}")
+                print(f"Course Code: {row[4]}")
+                found = True
+                name = input("Enter the updated student name (press Enter to skip): ")
+                gender = input("Enter the updated student gender (press Enter to skip): ")
+                year_level = input("Enter the updated student year level (press Enter to skip): ")
+                course_code = input("Enter the updated course code (press Enter to skip): ")
+
+                updated_row = [student_id, name if name else row[1], gender if gender else row[2],
+                               year_level if year_level else row[3], course_code if course_code else row[4]]
+
+                rows[rows.index(row)] = updated_row
+
+                print("Student information updated successfully.")
+                break
+
+    if found:
+        with open(STUDENTS_FILE, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(rows)
+    else:
+        print("Error: Student not found.")
+
+# Function to delete a student
+def delete_student():
+    student_id = input("Enter the student ID: ")
+    found = False
+    rows = []
+
+    with open(STUDENTS_FILE, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if row[0] != student_id:
+                rows.append(row)
+            else:
+                found = True
+
+    if found:
+        with open(STUDENTS_FILE, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(rows)
+        print("Student deleted successfully.")
+    else:
+        print("Error: Student not found.")
+
+# Function to list all students
+def list_students():
+    if os.path.exists(STUDENTS_FILE) and os.access(STUDENTS_FILE, os.R_OK):
+        with open(STUDENTS_FILE, 'r') as file:
+            reader = csv.reader(file)
+            students = list(reader)
+            if len(students) > 0:
+                print("Student List:")
+                for student in students:
+                    if len(student) >= 5:
+                        print(f"ID: {student[0]}, Name: {student[1]}, Gender: {student[2]}, Year Level: {student[3]}, Course Code: {student[4]}")
+                    else:
+                        print("Error: Invalid student data.")
+            else:
+                print("No students found.")
+    else:
+        print(f"Error: Cannot read from {STUDENTS_FILE}. Please check if the file exists and file permissions.")
+
+# Function to create a new course
+def create_course():
+    course_code = input("Enter the course code: ")
+    course = input("Enter the course name: ")
+
+    course_data = [course_code, course]
+
+    with open(COURSES_FILE, 'a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(course_data)
+
+    print("Course created successfully.")
+
+# Function to read course information
+def read_course():
+    course_code = input("Enter the course code: ")
+
+    with open(COURSES_FILE, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if row[0] == course_code:
+                print("Course Information:")
+                print(f"Code: {row[0]}")
+                print(f"Course: {row[1]}")
+                return
+
+    print("Error: Course not found.")
+
+# Function to update student information
+def update_course():
+    course_code = input("Enter the course code: ")
+    found = False
+
+    with open(COURSES_FILE, 'r', newline='') as file:
+        reader = csv.reader(file)
+        rows = list(reader)
+        for row in rows:
+            if row[0] == course_code:
+                print("Existing Information:")
+                print(f"Code: {row[0]}")
+                print(f"Course: {row[1]}")
+                found = True
+                course_name = input("Enter the updated course name: ")
+                updated_row = [course_code, course_name if course_name else row[1]]
+
+                rows[rows.index(row)] = updated_row
+
+                print("Course information updated successfully.")
+                break
+
+    if found:
+        with open(COURSES_FILE, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(rows)
+    else:
+        print("Error: Course not found.")
+
+# Function to delete a course
+def delete_course():
+    course_code = input("Enter the course code: ")
+    found = False
+    rows = []
+
+    with open(COURSES_FILE, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if row[0] != course_code:
+                rows.append(row)
+            else:
+                found = True
+
+    if found:
+        with open(COURSES_FILE, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(rows)
+        print("Course deleted successfully.")
+    else:
+        print("Error: Course not found.")
+
+# Function to list all courses
+def list_courses():
+    if os.path.exists(COURSES_FILE) and os.access(COURSES_FILE, os.R_OK):
+        with open(COURSES_FILE, 'r') as file:
+            reader = csv.reader(file)
+            courses = list(reader)
+            if len(courses) > 0:
+                print("Course List:")
+                for course in courses:
+                    if len(course) >= 2:
+                        print(f"Code: {course[0]}, Course: {course[1]}")
+                    else:
+                        print("Error: Invalid course data.")
+            else:
+                print("No courses found.")
+    else:
+        print(f"Error: Cannot read from {COURSES_FILE}. Please check if the file exists and file permissions.")
+
+# Main menu
+print("--- Simple Student Information System (SSIS) ---")
+print("1. Create Student")
+print("2. Read Student Information")
+print("3. Update Student Information")
+print("4. Delete Student")
+print("5. List Students")
+print("6. Create Course")
+print("7. Read Course Information")
+print("8. Update Course Information")
+print("9. Delete Course")
+print("10. List Courses")
+print("0. Exit")
+print("--------------------------------------------------")
+
+# Program loop
+while True:
+    option = input("\nEnter an option: ")
+    if option == "0":
+        break
+    elif option == "1":
+        create_student()
+    elif option == "2":
+        read_student()
+    elif option == "3":
+        update_student()
+    elif option == "4":
+        delete_student()
+    elif option == "5":
+        list_students()
+    elif option == "6":
+        create_course()
+    elif option == "7":
+        read_course()
+    elif option == "8":
+        update_course()
+    elif option == "9":
+        delete_course()
+    elif option == "10":
+        list_courses()
+    else:
+        print("Invalid option. Please try again.")
